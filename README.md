@@ -1,1 +1,1 @@
-# vocabulary_coverage_analyzer
+# Vocabulary Coverage Analyzer
