@@ -3,25 +3,26 @@ import codecs
 import re
 from configparser import ConfigParser
 from ExcelWriter import ExcelWriter
+from collections import OrderedDict
 
 
 class LanguageStats:
 
     def __init__(self):
-        self.config = {}
-        self.raw_txt = {}
-        self.base_word_list = {}
-        self.stats = {}
-        self.print_output = {}
-        self.raw_txt_to_base_list = {}
-        self.base_list_to_raw_txt = {}
+        self.config = OrderedDict()
+        self.raw_txt = OrderedDict()
+        self.base_word_list = OrderedDict()
+        self.stats = OrderedDict()
+        self.print_output = OrderedDict()
+        self.raw_txt_to_base_list = OrderedDict()
+        self.base_list_to_raw_txt = OrderedDict()
 
 
     def read_config(self, path):
         config = ConfigParser()
         config.read(path, encoding='utf-8')
         for section in config.sections():
-            self.config[section] = {}
+            self.config[section] = OrderedDict()
             for option in config.options(section):
                 self.config[section][option] = config.get(section, option)
 
@@ -130,15 +131,16 @@ class LanguageStats:
 
 
     def get_stats(self):
-        for bwl_nr in self.base_word_list:
+        for rtl_nr in self.raw_txt:
             cum_percent = 0
-            self.stats[bwl_nr] = {}
-            for rtl_nr in self.raw_txt:
-                self.stats[bwl_nr][rtl_nr] = {}
-                self.stats[bwl_nr][rtl_nr]['percent_raw_txt_in_base_list'] = self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_in_word_list'] / self.raw_txt[rtl_nr]['count_raw_txt_tokens']
-                cum_percent += self.stats[bwl_nr][rtl_nr]['percent_raw_txt_in_base_list']
-                self.stats[bwl_nr][rtl_nr]['cum_percent_raw_txt_in_base_list'] = cum_percent
-                self.stats[bwl_nr][rtl_nr]['percent_base_list_in_raw_txt'] = self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] / self.base_word_list[bwl_nr]['count_base_word_list_families']
+            self.stats[rtl_nr] = OrderedDict()
+
+            for bwl_nr in self.base_word_list:
+                self.stats[rtl_nr][bwl_nr] = {}
+                self.stats[rtl_nr][bwl_nr]['percent_raw_txt_in_base_list'] = self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_in_word_list'] / self.raw_txt[rtl_nr]['count_raw_txt_tokens']
+                cum_percent += self.stats[rtl_nr][bwl_nr]['percent_raw_txt_in_base_list']
+                self.stats[rtl_nr][bwl_nr]['cum_percent_raw_txt_in_base_list'] = cum_percent
+                self.stats[rtl_nr][bwl_nr]['percent_base_list_in_raw_txt'] = self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] / self.base_word_list[bwl_nr]['count_base_word_list_families']
 
 
     def prepare_raw_txt_print(self, input):
@@ -309,8 +311,8 @@ class LanguageStats:
                 ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Tokens', \
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['count_txt_in_word_list'],\
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['count_txt_not_in_word_list']))
-                ws.write(wb.curr_row, 3, self.stats[bwl_nr][ltr_nr]['percent_raw_txt_in_base_list'] * 100, wb.percent)
-                ws.write(wb.curr_row, 4, self.stats[bwl_nr][ltr_nr]['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
+                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['percent_raw_txt_in_base_list'] * 100, wb.percent)
+                ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
 
                 wb.curr_row += 1
 
@@ -323,7 +325,7 @@ class LanguageStats:
                 ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Families',\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_in_txt'],\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_not_in_txt']))
-                ws.write(wb.curr_row, 3, self.stats[bwl_nr][ltr_nr]['percent_base_list_in_raw_txt'] * 100, wb.percent)
+                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['percent_base_list_in_raw_txt'] * 100, wb.percent)
                 wb.curr_row += 1
 
         for bwl_nr in self.print_output:
