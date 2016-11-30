@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import codecs
 import re
+import sys
 from configparser import ConfigParser
 from ExcelWriter import ExcelWriter
 from collections import OrderedDict
@@ -18,13 +19,28 @@ class LanguageStats:
         self.base_list_to_raw_txt = OrderedDict()
 
 
-    def read_config(self, path):
-        config = ConfigParser()
-        config.read(path, encoding='utf-8')
-        for section in config.sections():
-            self.config[section] = OrderedDict()
-            for option in config.options(section):
-                self.config[section][option] = config.get(section, option)
+    def read_config(self):
+
+        if len(sys.argv) > 1:
+            config_path = sys.argv[1]
+            config = ConfigParser()
+            config.read(config_path, encoding='utf-8')
+
+            try:
+                sections = config.sections()
+                if len(sections) == 0:
+                    sys.exit()
+                for section in sections:
+
+                    self.config[section] = OrderedDict()
+                    for option in config.options(section):
+                        self.config[section][option] = config.get(section, option)
+            except:
+                print("The config file path is not valid")
+                sys.exit()
+        else:
+            print("No config file path provided")
+            sys.exit()
 
 
     def read_raw_txt(self):
@@ -350,7 +366,7 @@ class LanguageStats:
 
 new_language_stats = LanguageStats()
 
-new_language_stats.read_config(r"C:\Users\jan\Downloads\config.ini")
+new_language_stats.read_config()
 new_language_stats.read_raw_txt()
 new_language_stats.read_base_word_list()
 
