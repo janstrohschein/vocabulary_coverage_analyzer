@@ -85,7 +85,7 @@ class LanguageStats:
     def get_raw_txt_in_word_list(self):
 
         for rtl_nr in self.raw_txt:
-            self.raw_txt_to_base_list[rtl_nr] = {}
+            self.raw_txt_to_base_list[rtl_nr] = OrderedDict()
 
             for bwl_nr in self.base_word_list:
                 self.raw_txt_to_base_list[rtl_nr][bwl_nr] = {}
@@ -282,7 +282,14 @@ class LanguageStats:
     #     print("Liste ausgegeben in " + path)
 
 
-    def write_excel_file(self, path):
+    def write_excel_file(self):
+
+        path = self.config['Output File Path']['output_path']
+
+        if len(path) == 0:
+            print('No output path provided')
+            sys.exit()
+
 
         wb = ExcelWriter(path)
 
@@ -362,8 +369,6 @@ class LanguageStats:
         wb.close()
 
 
-
-
 new_language_stats = LanguageStats()
 
 new_language_stats.read_config()
@@ -382,7 +387,7 @@ new_language_stats.prepare_base_list_print('word_list_in_raw_txt')
 new_language_stats.prepare_base_list_print('word_list_not_in_raw_txt')
 
 #new_language_stats.write_txt_file(r"C:\Users\jan\Downloads\Matze Output.txt")
-new_language_stats.write_excel_file(r"C:\Users\jan\Downloads\Matze Output.xlsx")
+new_language_stats.write_excel_file()
 
 # Raw text -> Base word list noch um Types ergänzen
 # Ausgabe in Zeile 25 hinzufügen
