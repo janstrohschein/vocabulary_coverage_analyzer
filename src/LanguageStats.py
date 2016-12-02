@@ -192,7 +192,14 @@ class LanguageStats:
                         self.print_output[bwl_nr][rtl_nr][input].append((str(word_count) + 'x ' + old_word + '\n'))
 
 
-    def prepare_base_list_print(self, input, complete_families = False):
+    def prepare_base_list_print(self, input):
+
+        complete_families = self.config['Parameter']['print_complete_families']
+
+        # if len(complete_families) == 0:
+        #     complete_families = False
+        # else:
+        #     complete_families = bool(complete_families)
 
         for bwl_nr in self.base_list_to_raw_txt:
             if bwl_nr not in self.print_output:
@@ -204,7 +211,7 @@ class LanguageStats:
 
                 self.print_output[bwl_nr][ltr_nr][input] = []
 
-                if complete_families == True:
+                if complete_families == 'True':
                     for family in self.base_list_to_raw_txt[bwl_nr][ltr_nr][input]:
                         self.print_output[bwl_nr][ltr_nr][input].append(str(family) + '\n \n')
                 else:
