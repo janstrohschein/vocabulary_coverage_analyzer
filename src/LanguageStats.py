@@ -47,14 +47,14 @@ class LanguageStats:
         for list_nr, path in self.config['Input Raw Text File Paths'].items():
             self.raw_txt[list_nr] = {}
             self.raw_txt[list_nr]['raw_txt_path'] = path
-            self.raw_txt[list_nr]['count_raw_txt_tokens'] = 0
+            self.raw_txt[list_nr]['count_raw_txt'] = 0
             with open(path, 'r') as in_file:
-                self.raw_txt[list_nr]['data'] = []
+                self.raw_txt[list_nr]['raw_txt'] = []
                 for line in in_file:
                     for word in re.findall(r"[\w]+", line):
-                        self.raw_txt[list_nr]['data'].append(word.lower())
-                        self.raw_txt[list_nr]['count_raw_txt_tokens'] += 1
-            self.raw_txt[list_nr]['data'] = sorted(self.raw_txt[list_nr]['data'], key=str.lower)
+                        self.raw_txt[list_nr]['raw_txt'].append(word.lower())
+                        self.raw_txt[list_nr]['count_raw_txt'] += 1
+            self.raw_txt[list_nr]['raw_txt'] = sorted(self.raw_txt[list_nr]['raw_txt'], key=str.lower)
 
 
     def read_base_word_list(self):
@@ -82,31 +82,34 @@ class LanguageStats:
                 print('Base Word List ' + str(list_nr) + ': File could not be opened')
 
 
-    def get_raw_txt_in_word_list(self):
+    def get_raw_txt_in_word_list(self, input):
 
         for rtl_nr in self.raw_txt:
-            self.raw_txt_to_base_list[rtl_nr] = OrderedDict()
+            if rtl_nr not in self.raw_txt_to_base_list:
+                self.raw_txt_to_base_list[rtl_nr] = OrderedDict()
 
             for bwl_nr in self.base_word_list:
-                self.raw_txt_to_base_list[rtl_nr][bwl_nr] = {}
-                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_in_word_list'] = 0
-                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_not_in_word_list'] = 0
-                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt_in_word_list'] = []
-                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt_not_in_word_list']  = []
+                if bwl_nr not in self.raw_txt_to_base_list[rtl_nr]:
+                    self.raw_txt_to_base_list[rtl_nr][bwl_nr] = {}
+                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input] = {}
+                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['count_txt_in_word_list'] = 0
+                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['count_txt_not_in_word_list'] = 0
+                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['raw_txt_in_word_list'] = []
+                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['raw_txt_not_in_word_list']  = []
 
-            for word in self.raw_txt[rtl_nr]['data']:
+            for word in self.raw_txt[rtl_nr][input]:
                 word_found = False
                 for bwl_nr in self.base_word_list:
                     if word_found == False:
                         for family in self.base_word_list[bwl_nr]['data']:
                             if word.upper() in family:
                                 word_found = True
-                                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_in_word_list'] += 1
-                                self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt_in_word_list'].append(word)
+                                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['count_txt_in_word_list'] += 1
+                                self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['raw_txt_in_word_list'].append(word)
                                 break
                         if not word_found:
-                            self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_not_in_word_list'] += 1
-                            self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt_not_in_word_list'].append(word)
+                            self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['count_txt_not_in_word_list'] += 1
+                            self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]['raw_txt_not_in_word_list'].append(word)
 
 
     def get_word_list_in_raw_text(self):
@@ -138,25 +141,33 @@ class LanguageStats:
             self.raw_txt[list_nr]['distinct_types'] = []
             distinct_types = 0
             old_word = ''
-            for word in self.raw_txt[list_nr]['data']:
+            for word in self.raw_txt[list_nr]['raw_txt']:
                 if word != old_word:
                     old_word = word
                     self.raw_txt[list_nr]['distinct_types'].append(word)
                     distinct_types += 1
-            self.raw_txt[list_nr]['count_raw_txt_types'] = distinct_types
+            self.raw_txt[list_nr]['count_distinct_types'] = distinct_types
 
 
     def get_stats(self):
         for rtl_nr in self.raw_txt:
-            cum_percent = 0
             self.stats[rtl_nr] = OrderedDict()
 
-            for bwl_nr in self.base_word_list:
-                self.stats[rtl_nr][bwl_nr] = {}
-                self.stats[rtl_nr][bwl_nr]['percent_raw_txt_in_base_list'] = self.raw_txt_to_base_list[rtl_nr][bwl_nr]['count_txt_in_word_list'] / self.raw_txt[rtl_nr]['count_raw_txt_tokens']
-                cum_percent += self.stats[rtl_nr][bwl_nr]['percent_raw_txt_in_base_list']
-                self.stats[rtl_nr][bwl_nr]['cum_percent_raw_txt_in_base_list'] = cum_percent
-                self.stats[rtl_nr][bwl_nr]['percent_base_list_in_raw_txt'] = self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] / self.base_word_list[bwl_nr]['count_base_word_list_families']
+            for input_type in ('raw_txt', 'distinct_types'):
+                cum_percent = 0
+                count_input = 'count_' + input_type
+                for bwl_nr in self.base_word_list:
+                    if bwl_nr not in self.stats[rtl_nr]:
+                        self.stats[rtl_nr][bwl_nr] = OrderedDict()
+                    self.stats[rtl_nr][bwl_nr][input_type] = OrderedDict()
+
+                    self.stats[rtl_nr][bwl_nr][input_type]['percent_raw_txt_in_base_list'] = self.raw_txt_to_base_list\
+                        [rtl_nr][bwl_nr][input_type]['count_txt_in_word_list'] / self.raw_txt[rtl_nr][count_input]
+                    cum_percent += self.stats[rtl_nr][bwl_nr][input_type]['percent_raw_txt_in_base_list']
+                    self.stats[rtl_nr][bwl_nr][input_type]['cum_percent_raw_txt_in_base_list'] = cum_percent
+
+                    self.stats[rtl_nr][bwl_nr]['raw_txt']['percent_base_list_in_raw_txt'] = self.base_list_to_raw_txt[bwl_nr]\
+                        [rtl_nr]['count_word_list_in_txt'] / self.base_word_list[bwl_nr]['count_base_word_list_families']
 
 
     def prepare_raw_txt_print(self, input):
@@ -168,18 +179,10 @@ class LanguageStats:
                 if rtl_nr not in self.print_output[bwl_nr]:
                     self.print_output[bwl_nr][rtl_nr] = {}
 
-        # for rtl_nr in self.raw_txt_to_base_list:
-        #     if rtl_nr not in self.print_output:
-        #         self.print_output[rtl_nr] = {}
-        #
-        #     for bwl_nr in self.raw_txt_to_base_list[rtl_nr]:
-        #         if bwl_nr not in self.print_output[rtl_nr]:
-        #             self.print_output[rtl_nr][bwl_nr] = {}
-
                 self.print_output[bwl_nr][rtl_nr][input] = []
                 old_word = ''
                 word_count = 0
-                for i, word in enumerate(self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]):
+                for i, word in enumerate(self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt'][input]):
                     if word != old_word:
                         if word_count > 0:
                             self.print_output[bwl_nr][rtl_nr][input].append((str(word_count) + 'x ' + old_word + '\n'))
@@ -188,18 +191,13 @@ class LanguageStats:
                     else:
                         word_count += 1
 
-                    if len(self.raw_txt_to_base_list[rtl_nr][bwl_nr][input]) -1 == i:
+                    if len(self.raw_txt_to_base_list[rtl_nr][bwl_nr]['raw_txt'][input]) -1 == i:
                         self.print_output[bwl_nr][rtl_nr][input].append((str(word_count) + 'x ' + old_word + '\n'))
 
 
     def prepare_base_list_print(self, input):
 
         complete_families = self.config['Parameter']['print_complete_families']
-
-        # if len(complete_families) == 0:
-        #     complete_families = False
-        # else:
-        #     complete_families = bool(complete_families)
 
         for bwl_nr in self.base_list_to_raw_txt:
             if bwl_nr not in self.print_output:
@@ -297,11 +295,10 @@ class LanguageStats:
             print('No output path provided')
             sys.exit()
 
-
         wb = ExcelWriter(path)
 
         ws = wb.add_worksheet('Overview')
-        ws.set_column(0,0,20)
+        ws.set_column(0,0,30)
 
         # Input File Paths
         ws.write(0, 0, 'Input File Paths', wb.bold)
@@ -320,8 +317,8 @@ class LanguageStats:
         # Input File Overview
         for ltr_nr in self.raw_txt:
             ws.write(wb.curr_row + 1,0, 'Overview', wb.bold)
-            ws.write_row(wb.curr_row + 2, 0, ('Count Raw Text', 'Tokens:', self.raw_txt[ltr_nr]['count_raw_txt_tokens'],\
-                                           'Types:', self.raw_txt[ltr_nr]['count_raw_txt_types']))
+            ws.write_row(wb.curr_row + 2, 0, ('Count Raw Text', 'Tokens:', self.raw_txt[ltr_nr]['count_raw_txt'],\
+                                           'Types:', self.raw_txt[ltr_nr]['count_distinct_types']))
             wb.curr_row +=2
 
         for bwl_nr in self.base_word_list:
@@ -339,13 +336,29 @@ class LanguageStats:
         for ltr_nr in self.raw_txt_to_base_list:
             for bwl_nr in self.raw_txt_to_base_list[ltr_nr]:
                 ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Tokens', \
-                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['count_txt_in_word_list'],\
-                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['count_txt_not_in_word_list']))
-                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['percent_raw_txt_in_base_list'] * 100, wb.percent)
-                ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
+                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['raw_txt']['count_txt_in_word_list'],\
+                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['raw_txt']['count_txt_not_in_word_list']))
+                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['raw_txt']['percent_raw_txt_in_base_list'] * 100, wb.percent)
+                ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['raw_txt']['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
+
+                wb.curr_row += 1
+        #
+        ws.write(wb.curr_row + 2, 0, 'Raw Text Type Count in Base Word List')
+        ws.write_row(wb.curr_row + 3, 1, ('in', 'not in', '%in', '%in cum'), wb.align_mid)
+        wb.curr_row += 4
+
+        for ltr_nr in self.raw_txt_to_base_list:
+            for bwl_nr in self.raw_txt_to_base_list[ltr_nr]:
+                ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Types', \
+                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['distinct_types']['count_txt_in_word_list'],\
+                                           self.raw_txt_to_base_list[ltr_nr][bwl_nr]['distinct_types']['count_txt_not_in_word_list']))
+                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['distinct_types']['percent_raw_txt_in_base_list'] * 100, wb.percent)
+                ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['distinct_types']['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
 
                 wb.curr_row += 1
 
+
+        #
         ws.write(wb.curr_row + 1, 0, 'Base Word List Families Count in Raw Text')
         ws.write_row(wb.curr_row + 2, 1, ('in', 'not in', '%in'), wb.align_mid)
 
@@ -355,7 +368,7 @@ class LanguageStats:
                 ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Families',\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_in_txt'],\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_not_in_txt']))
-                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['percent_base_list_in_raw_txt'] * 100, wb.percent)
+                ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['raw_txt']['percent_base_list_in_raw_txt'] * 100, wb.percent)
                 wb.curr_row += 1
 
         for bwl_nr in self.print_output:
@@ -384,7 +397,8 @@ new_language_stats.read_base_word_list()
 
 
 new_language_stats.get_raw_txt_distinct_types()
-new_language_stats.get_raw_txt_in_word_list()
+new_language_stats.get_raw_txt_in_word_list('raw_txt')
+new_language_stats.get_raw_txt_in_word_list('distinct_types')
 new_language_stats.get_word_list_in_raw_text()
 new_language_stats.get_stats()
 
