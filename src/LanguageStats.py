@@ -315,76 +315,94 @@ class LanguageStats:
             wb.curr_row += 1
 
         # Input File Overview
+        wb.curr_row += 1
+        ws.write(wb.curr_row,0, 'Overview', wb.bold)
+        wb.curr_row += 1
         for ltr_nr in self.raw_txt:
-            ws.write(wb.curr_row + 1,0, 'Overview', wb.bold)
-            ws.write_row(wb.curr_row + 2, 0, ('Count Raw Text', 'Tokens:', self.raw_txt[ltr_nr]['count_raw_txt'],\
-                                           'Types:', self.raw_txt[ltr_nr]['count_distinct_types']))
-            wb.curr_row +=2
+            ws.write_row(wb.curr_row, 0, ('Count Raw Text ' + str(ltr_nr), \
+                                          'Tokens:', self.raw_txt[ltr_nr]['count_raw_txt'],\
+                                          'Types:', self.raw_txt[ltr_nr]['count_distinct_types']))
+            wb.curr_row +=1
 
         for bwl_nr in self.base_word_list:
-            ws.write_row(wb.curr_row,0, ('Count Base Word List'  + str(bwl_nr), 'Families:', \
-                                      self.base_word_list[bwl_nr]['count_base_word_list_families'], 'Tokens:',\
-                                      self.base_word_list[bwl_nr]['count_base_word_list_tokens']))
+            ws.write_row(wb.curr_row,0, ('Count Base Word List '  + str(bwl_nr), \
+                                         'Tokens:',self.base_word_list[bwl_nr]['count_base_word_list_tokens'],
+                                         'Families:',self.base_word_list[bwl_nr]['count_base_word_list_families']))
             wb.curr_row += 1
 
         # Analysis
         ws.write(wb.curr_row + 1, 0, 'Analysis', wb.bold)
         ws.write(wb.curr_row + 2, 0, 'Raw Text Token Count in Base Word List')
-        ws.write_row(wb.curr_row + 3, 1, ('in', 'not in', '%in', '%in cum'), wb.align_mid)
-        wb.curr_row += 4
+        wb.curr_row += 3
 
         for ltr_nr in self.raw_txt_to_base_list:
+            ws.write(wb.curr_row, 0, 'Raw Text ' + str(ltr_nr) + ' (' + str(self.raw_txt[ltr_nr]['count_raw_txt']) + ' Tokens)')
+            ws.write_row(wb.curr_row, 1, ('in', 'not in', '%in', '%in cum'), wb.align_mid)
+            wb.curr_row += 1
+
             for bwl_nr in self.raw_txt_to_base_list[ltr_nr]:
-                ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Tokens', \
+                ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr), \
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['raw_txt']['count_txt_in_word_list'],\
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['raw_txt']['count_txt_not_in_word_list']))
                 ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['raw_txt']['percent_raw_txt_in_base_list'] * 100, wb.percent)
                 ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['raw_txt']['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
 
                 wb.curr_row += 1
+            ws.write_row(wb.curr_row, 1, ('missed:', self.raw_txt_to_base_list[ltr_nr][bwl_nr]['raw_txt']['count_txt_not_in_word_list']))
+            wb.curr_row += 2
         #
-        ws.write(wb.curr_row + 2, 0, 'Raw Text Type Count in Base Word List')
-        ws.write_row(wb.curr_row + 3, 1, ('in', 'not in', '%in', '%in cum'), wb.align_mid)
-        wb.curr_row += 4
+        ws.write(wb.curr_row + 1, 0, 'Raw Text Type Count in Base Word List')
+        wb.curr_row += 2
 
         for ltr_nr in self.raw_txt_to_base_list:
+            ws.write(wb.curr_row, 0, 'Raw Text ' + str(ltr_nr) + ' (' + str(self.raw_txt[ltr_nr]['count_distinct_types']) + ' Types)')
+            ws.write_row(wb.curr_row, 1, ('in', 'not in', '%in', '%in cum'), wb.align_mid)
+            wb.curr_row += 1
+
             for bwl_nr in self.raw_txt_to_base_list[ltr_nr]:
-                ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Types', \
+                ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr), \
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['distinct_types']['count_txt_in_word_list'],\
                                            self.raw_txt_to_base_list[ltr_nr][bwl_nr]['distinct_types']['count_txt_not_in_word_list']))
                 ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['distinct_types']['percent_raw_txt_in_base_list'] * 100, wb.percent)
                 ws.write(wb.curr_row, 4, self.stats[ltr_nr][bwl_nr]['distinct_types']['cum_percent_raw_txt_in_base_list'] * 100, wb.percent)
 
                 wb.curr_row += 1
-
+            ws.write_row(wb.curr_row, 1, ('missed:', self.raw_txt_to_base_list[ltr_nr][bwl_nr]['distinct_types']['count_txt_not_in_word_list']))
+            wb.curr_row += 2
+        wb.curr_row += 1
 
         #
-        ws.write(wb.curr_row + 1, 0, 'Base Word List Families Count in Raw Text')
-        ws.write_row(wb.curr_row + 2, 1, ('in', 'not in', '%in'), wb.align_mid)
+        ws.write(wb.curr_row, 0, 'Base Word List Families Count in Raw Text')
 
-        wb.curr_row += 3
-        for bwl_nr in self.base_list_to_raw_txt:
-            for ltr_nr in self.base_list_to_raw_txt[bwl_nr]:
+        wb.curr_row += 1
+        for ltr_nr in self.raw_txt:
+            ws.write(wb.curr_row, 0, 'Raw Text ' + str(ltr_nr))
+            ws.write_row(wb.curr_row, 1, ('in', 'not in', '%in'), wb.align_mid)
+            wb.curr_row += 1
+            for bwl_nr in self.base_list_to_raw_txt:
                 ws.write_row(wb.curr_row, 0, ('Word List ' + str(bwl_nr) + ' Families',\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_in_txt'],\
                                            self.base_list_to_raw_txt[bwl_nr][ltr_nr]['count_word_list_not_in_txt']))
                 ws.write(wb.curr_row, 3, self.stats[ltr_nr][bwl_nr]['raw_txt']['percent_base_list_in_raw_txt'] * 100, wb.percent)
                 wb.curr_row += 1
+            wb.curr_row += 1
 
-        for bwl_nr in self.print_output:
-            ws_name = 'BWL' + str(bwl_nr)
+        # create worksheets for tokens in/not in bwl and families in/not in raw text
+        for rtl_nr in self.raw_txt:
+            for bwl_nr in self.print_output:
+                ws_name = str(rtl_nr) + '_' + str(bwl_nr)
 
-            wb.write_print_output(ws_name, bwl_nr, 'Raw Text Tokens in Base Word List ' + str(bwl_nr),\
-                                  'raw_txt_in_word_list', self.print_output)
+                wb.write_print_output(ws_name, rtl_nr, bwl_nr, 'Raw Text Tokens in Base Word List ' + str(bwl_nr),\
+                                      'raw_txt_in_word_list', self.print_output)
 
-            wb.write_print_output(ws_name, bwl_nr, 'Raw Text Tokens not in Base Word List ' + str(bwl_nr),\
-                                  'raw_txt_not_in_word_list', self.print_output)
+                wb.write_print_output(ws_name, rtl_nr, bwl_nr, 'Raw Text Tokens not in Base Word List ' + str(bwl_nr),\
+                                      'raw_txt_not_in_word_list', self.print_output)
 
-            wb.write_print_output(ws_name, bwl_nr, 'Base Word List ' + str(bwl_nr) + ' in Raw Text',\
-                                  'word_list_in_raw_txt', self.print_output)
+                wb.write_print_output(ws_name, rtl_nr, bwl_nr, 'Base Word List ' + str(bwl_nr) + ' in Raw Text',\
+                                      'word_list_in_raw_txt', self.print_output)
 
-            wb.write_print_output(ws_name, bwl_nr, 'Base Word List ' + str(bwl_nr) + ' not in Raw Text',\
-                                  'word_list_not_in_raw_txt', self.print_output)
+                wb.write_print_output(ws_name, rtl_nr, bwl_nr, 'Base Word List ' + str(bwl_nr) + ' not in Raw Text',\
+                                      'word_list_not_in_raw_txt', self.print_output)
 
         wb.close()
 
@@ -394,7 +412,6 @@ new_language_stats = LanguageStats()
 new_language_stats.read_config()
 new_language_stats.read_raw_txt()
 new_language_stats.read_base_word_list()
-
 
 new_language_stats.get_raw_txt_distinct_types()
 new_language_stats.get_raw_txt_in_word_list('raw_txt')
@@ -407,8 +424,6 @@ new_language_stats.prepare_raw_txt_print('raw_txt_not_in_word_list')
 new_language_stats.prepare_base_list_print('word_list_in_raw_txt')
 new_language_stats.prepare_base_list_print('word_list_not_in_raw_txt')
 
-#new_language_stats.write_txt_file(r"C:\Users\jan\Downloads\Matze Output.txt")
 new_language_stats.write_excel_file()
 
-# Raw text -> Base word list noch um Types ergänzen
 # Ausgabe in Zeile 25 hinzufügen
