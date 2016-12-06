@@ -121,29 +121,9 @@ class LanguageStats:
             self.base_list_to_raw_txt[bwl_nr] = {}
 
             for rtl_nr in self.raw_txt:
-                self.base_list_to_raw_txt[bwl_nr][rtl_nr] = {}
-                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] = 0
-                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] = 0
-                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt'] = []
-                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_not_in_raw_txt'] = []
+                word_list_in_raw_txt = []
+                word_list_not_in_raw_txt = []
 
-                for family in self.base_word_list[bwl_nr]['data']:
-                    family_found = False
-                    for token in self.raw_txt[rtl_nr]['distinct_types']:
-                        if token in family:
-                            family_found = True
-                            self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] += 1
-                            self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt'].append(family)
-                            break
-                    if not family_found:
-                        self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] += 1
-                        self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_not_in_raw_txt'].append(family)
-
-    def get_word_list_in_raw_text_opt(self):
-        for bwl_nr in self.base_word_list:
-            self.base_list_to_raw_txt[bwl_nr] = {}
-
-            for rtl_nr in self.raw_txt:
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr] = {}
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] = 0
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] = 0
@@ -153,18 +133,33 @@ class LanguageStats:
                 for token in self.raw_txt[rtl_nr]['distinct_types']:
                     if token[0] in self.base_word_list[bwl_nr]['sorted']:
                         for entry in self.base_word_list[bwl_nr]['sorted'][token[0]]:
-                            family_found = False
                             if token == entry[0]:
-                                family_found = True
-                                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] += 1
-                                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt']\
-                                    .append(self.base_word_list[bwl_nr]['data'][entry[1]])
+                                word_list_in_raw_txt.append(self.base_word_list[bwl_nr]['data'][entry[1]])
+                                #self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt']\
+                                #    .append(self.base_word_list[bwl_nr]['data'][entry[1]])
                                 break
+                to_delete = []
+                word_list_in_raw_txt = sorted(word_list_in_raw_txt)
+                for i, entry in enumerate(word_list_in_raw_txt):
+                    if entry == word_list_in_raw_txt[i - 1]:
+                        to_delete.append(i)
+                for index in reversed(to_delete):
+                    word_list_in_raw_txt.pop(index)
 
-                    if not family_found:
-                        self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] += 1
-                        self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_not_in_raw_txt']\
-                            .append(self.base_word_list[bwl_nr]['data'][entry[1]])
+                for entry in self.base_word_list[bwl_nr]['data']:
+                    if entry not in word_list_in_raw_txt:
+                        word_list_not_in_raw_txt.append(entry)
+
+
+
+                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt'] = word_list_in_raw_txt
+                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_not_in_raw_txt'] = word_list_not_in_raw_txt
+
+                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] = len(word_list_in_raw_txt)
+                self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] = len(word_list_not_in_raw_txt)
+
+
+
 
 
     def get_raw_txt_distinct_types(self):
@@ -464,7 +459,8 @@ new_language_stats.get_sorted_bwl()
 new_language_stats.get_raw_txt_distinct_types()
 new_language_stats.get_raw_txt_in_word_list('raw_txt')
 new_language_stats.get_raw_txt_in_word_list('distinct_types')
-new_language_stats.get_word_list_in_raw_text_opt()
+new_language_stats.get_word_list_in_raw_text()
+
 new_language_stats.get_stats()
 
 new_language_stats.prepare_raw_txt_print('raw_txt_in_word_list')
