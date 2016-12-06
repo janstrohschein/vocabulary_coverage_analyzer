@@ -62,14 +62,17 @@ class LanguageStats:
 
             try:
                 with open(path, 'r') as in_file:
+                    family = []
                     for line in in_file:
                         try:
                             if not line.startswith('\t'):
-                                self.base_word_list[list_nr]['data'].append([line.strip()])
+                                if len(family) > 0:
+                                    self.base_word_list[list_nr]['data'].append(tuple(family))
+                                    family = []
+                                family.append(line.strip())
                                 self.base_word_list[list_nr]['count_base_word_list_families'] += 1
                             else:
-                                self.base_word_list[list_nr]['data'][
-                                    len(self.base_word_list[list_nr]['data']) - 1].append(line.strip())
+                                family.append(line.strip())
 
                             self.base_word_list[list_nr]['count_base_word_list_tokens'] += 1
                         except:
@@ -121,8 +124,7 @@ class LanguageStats:
             self.base_list_to_raw_txt[bwl_nr] = {}
 
             for rtl_nr in self.raw_txt:
-                word_list_in_raw_txt = []
-                word_list_not_in_raw_txt = []
+                word_list_in_raw_txt = set()
 
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr] = {}
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] = 0
@@ -134,33 +136,18 @@ class LanguageStats:
                     if token[0] in self.base_word_list[bwl_nr]['sorted']:
                         for entry in self.base_word_list[bwl_nr]['sorted'][token[0]]:
                             if token == entry[0]:
-                                word_list_in_raw_txt.append(self.base_word_list[bwl_nr]['data'][entry[1]])
-                                #self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt']\
-                                #    .append(self.base_word_list[bwl_nr]['data'][entry[1]])
+                                word_list_in_raw_txt.add(tuple(self.base_word_list[bwl_nr]['data'][entry[1]]))
                                 break
-                to_delete = []
+
                 word_list_in_raw_txt = sorted(word_list_in_raw_txt)
-                for i, entry in enumerate(word_list_in_raw_txt):
-                    if entry == word_list_in_raw_txt[i - 1]:
-                        to_delete.append(i)
-                for index in reversed(to_delete):
-                    word_list_in_raw_txt.pop(index)
-
-                for entry in self.base_word_list[bwl_nr]['data']:
-                    if entry not in word_list_in_raw_txt:
-                        word_list_not_in_raw_txt.append(entry)
-
-
+                word_list_not_in_raw_txt = [item for item in self.base_word_list[bwl_nr]['data'] \
+                                            if item not in word_list_in_raw_txt]
 
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_in_raw_txt'] = word_list_in_raw_txt
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['word_list_not_in_raw_txt'] = word_list_not_in_raw_txt
 
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_in_txt'] = len(word_list_in_raw_txt)
                 self.base_list_to_raw_txt[bwl_nr][rtl_nr]['count_word_list_not_in_txt'] = len(word_list_not_in_raw_txt)
-
-
-
-
 
     def get_raw_txt_distinct_types(self):
         for list_nr in self.raw_txt:
