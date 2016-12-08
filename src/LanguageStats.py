@@ -93,7 +93,7 @@ class LanguageStats:
                     try:
                         if item[0] not in self.base_word_list[bwl]['sorted']:
                             self.base_word_list[bwl]['sorted'][item[0]] = []
-                            self.base_word_list[bwl]['sorted'][item[0]].append((item, i))
+                        self.base_word_list[bwl]['sorted'][item[0]].append((item, i))
                     except:
                         print("An error occured with the following item: ")
                         print(item)
