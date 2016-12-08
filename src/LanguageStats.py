@@ -77,19 +77,26 @@ class LanguageStats:
                             self.base_word_list[list_nr]['count_base_word_list_tokens'] += 1
                         except:
                             print('Base Word List ' + str(list_nr) + ': Not all Lines could be processed')
+                            print(line)
                     # appends the last family
-                    self.base_word_list[list_nr]['data'].append(tuple(family))
+                    if len(family[0]) > 0:
+                        self.base_word_list[list_nr]['data'].append(tuple(family))
             except:
                 print('Base Word List ' + str(list_nr) + ': File could not be opened')
+                print(family)
 
     def get_sorted_bwl(self):
         for bwl in self.base_word_list:
             self.base_word_list[bwl]['sorted'] = {}
             for i, family in enumerate(self.base_word_list[bwl]['data']):
                 for item in family:
-                    if item[0] not in self.base_word_list[bwl]['sorted']:
-                        self.base_word_list[bwl]['sorted'][item[0]] = []
-                    self.base_word_list[bwl]['sorted'][item[0]].append((item, i))
+                    try:
+                        if item[0] not in self.base_word_list[bwl]['sorted']:
+                            self.base_word_list[bwl]['sorted'][item[0]] = []
+                            self.base_word_list[bwl]['sorted'][item[0]].append((item, i))
+                    except:
+                        print("An error occured with the following item: ")
+                        print(item)
 
     def get_raw_txt_in_word_list(self, input):
 
