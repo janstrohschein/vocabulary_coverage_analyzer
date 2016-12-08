@@ -17,7 +17,7 @@ and install the installation tool pip.
 + There is one additional dependency, a package from John McNamara called 
 XlsxWriter. It provides excellent capabilities to create Excel documents in
 python. For further information regarding this project click [here](http://xlsxwriter.readthedocs.io/).
-To install it please open the command line and execute the following command:
+To install it please open the command line and execute the following command:  
     `pip install xlsxwriter`    
 + Download the Vocabulary Coverage Analyzer from this repository and extract the files.
  
