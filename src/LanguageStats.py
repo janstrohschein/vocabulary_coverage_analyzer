@@ -65,25 +65,25 @@ class LanguageStats:
                     family = []
                     for line in in_file:
                         try:
-                            if not line.startswith('\t'):
-                                if len(family) > 0:
-                                    self.base_word_list[list_nr]['data'].append(tuple(family))
-                                    family = []
-                                family.append(line.strip())
-                                self.base_word_list[list_nr]['count_base_word_list_families'] += 1
-                            else:
-                                family.append(line.strip())
+                            clean_line = line.strip().split(' ')[0]
+                            if len(clean_line) > 0:
+                                if not line.startswith('\t'):
+                                    if len(family) > 0:
+                                        self.base_word_list[list_nr]['data'].append(tuple(family))
+                                        family = []
+                                    family.append(clean_line)
+                                    self.base_word_list[list_nr]['count_base_word_list_families'] += 1
+                                else:
+                                    family.append(clean_line)
 
-                            self.base_word_list[list_nr]['count_base_word_list_tokens'] += 1
+                                self.base_word_list[list_nr]['count_base_word_list_tokens'] += 1
                         except:
                             print('Base Word List ' + str(list_nr) + ': Not all Lines could be processed')
                             print(line)
                     # appends the last family
-                    if len(family[0]) > 0:
-                        self.base_word_list[list_nr]['data'].append(tuple(family))
+                    self.base_word_list[list_nr]['data'].append(tuple(family))
             except:
                 print('Base Word List ' + str(list_nr) + ': File could not be opened')
-                print(family)
 
     def get_sorted_bwl(self):
         for bwl in self.base_word_list:
@@ -465,5 +465,3 @@ new_language_stats.prepare_base_list_print('word_list_in_raw_txt')
 new_language_stats.prepare_base_list_print('word_list_not_in_raw_txt')
 
 new_language_stats.write_excel_file()
-
-# Ausgabe in Zeile 25 hinzufügen
